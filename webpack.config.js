@@ -3,7 +3,7 @@ const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = options => {
   return {
-    entry: './index.js',
+    entry: './src/index.ts',
     output: {
       filename: 'bundle.js',
       publicPath: "auto",
@@ -12,42 +12,59 @@ module.exports = options => {
     module: {
       rules: [
         {
-          test: /.js$/,
+          test: /\.(js|jsx|ts|tsx)$/,
+          loader: 'ts-loader',
           exclude: /node_modules/,
+        },
+        {
+          test: /\.css$/,
+          use: [
+            'style-loader',
+            'css-loader'
+          ]
+        },
+        {
+          test: /\.svg$/,
+          use: 'file-loader'
+        },
+        {
+          test: /\.png$/,
           use: [
             {
-              loader: 'babel-loader',
+              loader: 'url-loader',
               options: {
-                cacheDirectory: true,
-                presets: ['@babel/react', '@babel/env']
+                mimetype: 'image/png'
               }
-            },
-          ],
+            }
+          ]
         },
       ],
     },
     plugins: [
       new ModuleFederationPlugin({
-        
-          // For remotes (please adjust)
-          name: "react",
-          library: { type: "var", name: "react" },
-          filename: "remoteEntry.js", // <-- Meta Data
-          exposes: {
-              './web-components': './app.js',
-          },        
-          shared: ["react", "react-dom"]
-        }),
-        new CopyWebpackPlugin({
-          patterns: [
-            {
-              from: './*.html'
-            }
-          ]
-        })
+
+        // For remotes (please adjust)
+        name: "react",
+        library: { type: "var", name: "react" },
+        filename: "remoteEntry.js", // <-- Meta Data
+        exposes: {
+          './web-components': './src/app.tsx',
+        },
+        shared: ["react", "react-dom"]
+      }),
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: './src/*.html'
+          }
+        ]
+      })
     ],
     devServer: {
       port: 4204
-    }
+    },
+    resolve: {
+      extensions: ['.js', '.jsx', '.ts', '.tsx']
+    },
   }
 }
